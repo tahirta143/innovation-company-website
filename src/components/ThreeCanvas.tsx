@@ -17,7 +17,8 @@ export default function ThreeCanvas({ isDark }: ThreeCanvasProps) {
 
     // --- Scene Setup ---
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(isDark ? 0x000000 : 0xffffff, 0.012);
+    scene.fog = new THREE.FogExp2(isDark ? 0x000000 : 0x0f172a, 0.015);
+    scene.background = new THREE.Color(isDark ? 0x000000 : 0x0f172a);
 
     // --- Camera Setup ---
     const camera = new THREE.PerspectiveCamera(
@@ -26,7 +27,7 @@ export default function ThreeCanvas({ isDark }: ThreeCanvasProps) {
       0.1,
       100
     );
-    camera.position.z = 25;
+    camera.position.z = 35; // Start further away for slow zoom in
 
     // --- Renderer Setup ---
     const renderer = new THREE.WebGLRenderer({
@@ -37,120 +38,89 @@ export default function ThreeCanvas({ isDark }: ThreeCanvasProps) {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
 
-    // --- Interactive 3D Cube (Innovation Symbol) ---
-    // Outer wireframe box
-    const outerGeo = new THREE.BoxGeometry(6, 6, 6);
-    const outerWireframe = new THREE.WireframeGeometry(outerGeo);
-    const outerMat = new THREE.LineBasicMaterial({
-      color: 0x14b8a6, // Teal
-      linewidth: 2,
-      transparent: true,
-      opacity: 0.8,
-    });
-    const outerCube = new THREE.LineSegments(outerWireframe, outerMat);
-    scene.add(outerCube);
+    // --- The Digital Core ---
+    const coreGroup = new THREE.Group();
+    // We will place the core towards the right side of the screen
+    coreGroup.position.set(6, 0, 0); 
+    scene.add(coreGroup);
 
-    // Inner glowing solid box
-    const innerGeo = new THREE.BoxGeometry(3.6, 3.6, 3.6);
+    // 1. Inner glowing solid core (Icosahedron)
+    const innerGeo = new THREE.IcosahedronGeometry(2.5, 0);
     const innerMat = new THREE.MeshPhysicalMaterial({
       color: 0x0d9488,
       emissive: 0x0f766e,
       roughness: 0.1,
       metalness: 0.8,
-      transmission: 0.6, // Glassmorphism block
+      transmission: 0.8,
       thickness: 1.5,
       transparent: true,
-      opacity: 0.75,
+      opacity: 0.85,
     });
-    const innerCube = new THREE.Mesh(innerGeo, innerMat);
-    scene.add(innerCube);
+    const innerCore = new THREE.Mesh(innerGeo, innerMat);
+    coreGroup.add(innerCore);
 
-    // Float geometric orbiting wireframe rings
-    const ringGeo = new THREE.TorusGeometry(5.5, 0.06, 8, 48);
-    const ringMat = new THREE.MeshBasicMaterial({
-      color: 0x06b6d4,
+    // 2. Wireframe shell (Icosahedron)
+    const shellGeo = new THREE.IcosahedronGeometry(3.5, 1);
+    const shellWireframe = new THREE.WireframeGeometry(shellGeo);
+    const shellMat = new THREE.LineBasicMaterial({
+      color: 0x14b8a6,
+      linewidth: 2,
       transparent: true,
-      opacity: 0.45,
+      opacity: 0.4,
     });
-    const ring = new THREE.Mesh(ringGeo, ringMat);
-    ring.rotation.x = Math.PI / 3;
-    scene.add(ring);
+    const shellCore = new THREE.LineSegments(shellWireframe, shellMat);
+    coreGroup.add(shellCore);
 
-    // --- Immersive Digital City / Tech Grid Matrix ---
-    const cityGroup = new THREE.Group();
-    const cityCount = 20;
-    const buildingGeometries: THREE.BoxGeometry[] = [];
-    const buildingMaterials: THREE.MeshPhysicalMaterial[] = [];
-    const buildings: {
-      mesh: THREE.Mesh;
-      baseHeight: number;
-      initialX: number;
-      initialZ: number;
-      noiseOffset: number;
-    }[] = [];
+    // 3. Orbiting Geometric Rings
+    const ringMat1 = new THREE.MeshBasicMaterial({ color: 0x0cebce, transparent: true, opacity: 0.3, wireframe: true });
+    const ringGeo1 = new THREE.TorusGeometry(6, 0.05, 8, 64);
+    const ring1 = new THREE.Mesh(ringGeo1, ringMat1);
+    ring1.rotation.x = Math.PI / 2.5;
+    coreGroup.add(ring1);
 
-    // Glowing horizontal coordinates scale grid on the floor under the city
-    const gridHelper = new THREE.GridHelper(60, 30, 0x14b8a6, isDark ? 0x0d9488 : 0x2dd4bf);
-    gridHelper.position.y = -8.1; // place slightly below scale ground
-    if (Array.isArray(gridHelper.material)) {
-      gridHelper.material.forEach((m) => {
-        m.transparent = true;
-        m.opacity = isDark ? 0.35 : 0.25;
-      });
-    } else {
-      gridHelper.material.transparent = true;
-      gridHelper.material.opacity = isDark ? 0.35 : 0.25;
-    }
-    cityGroup.add(gridHelper);
+    const ringMat2 = new THREE.MeshBasicMaterial({ color: 0x2dd4bf, transparent: true, opacity: 0.2, wireframe: true });
+    const ringGeo2 = new THREE.TorusGeometry(8, 0.02, 8, 64);
+    const ring2 = new THREE.Mesh(ringGeo2, ringMat2);
+    ring2.rotation.y = Math.PI / 3;
+    coreGroup.add(ring2);
 
-    for (let i = 0; i < cityCount; i++) {
-      const w = 1.2 + Math.random() * 2;
-      const h = 5 + Math.random() * 10;
-      const d = 1.2 + Math.random() * 2;
+    // 4. Data Streams (Particles orbiting the core)
+    const dataStreamCount = 300;
+    const dataStreamGeo = new THREE.BufferGeometry();
+    const dataStreamPositions = new Float32Array(dataStreamCount * 3);
+    const streamAngles: number[] = [];
+    const streamRadii: number[] = [];
+    const streamSpeeds: number[] = [];
+    const streamYOff: number[] = [];
+
+    for (let i = 0; i < dataStreamCount; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 4 + Math.random() * 8; // Orbit around the core
       
-      const bGeo = new THREE.BoxGeometry(w, h, d);
-      buildingGeometries.push(bGeo);
-
-      // Solid translucent body with neon physical properties
-      const bMat = new THREE.MeshPhysicalMaterial({
-        color: isDark ? 0x0f766e : 0x0d9488,
-        emissive: isDark ? 0x042f2e : 0x115e59,
-        roughness: 0.2,
-        metalness: 0.9,
-        transmission: 0.7,
-        transparent: true,
-        opacity: 0.35,
-      });
-      buildingMaterials.push(bMat);
-      const mesh = new THREE.Mesh(bGeo, bMat);
-
-      // Edge glow wireframe outline lines
-      const edges = new THREE.EdgesGeometry(bGeo);
-      const edgeMat = new THREE.LineBasicMaterial({
-        color: isDark ? 0x2dd4bf : 0x0d9488,
-        transparent: true,
-        opacity: 0.65,
-      });
-      const line = new THREE.LineSegments(edges, edgeMat);
-      mesh.add(line);
-
-      // Position buildings on a grid at the baseline base
-      mesh.position.x = (Math.random() - 0.5) * 45;
-      mesh.position.y = -8 + h / 2; // baseline ground offsets
-      mesh.position.z = (Math.random() - 0.5) * 35;
+      dataStreamPositions[i * 3] = Math.cos(angle) * radius;
+      dataStreamPositions[i * 3 + 1] = (Math.random() - 0.5) * 8; 
+      dataStreamPositions[i * 3 + 2] = Math.sin(angle) * radius;
       
-      cityGroup.add(mesh);
-      buildings.push({
-        mesh,
-        baseHeight: h,
-        initialX: mesh.position.x,
-        initialZ: mesh.position.z,
-        noiseOffset: Math.random() * 100
-      });
+      streamAngles.push(angle);
+      streamRadii.push(radius);
+      streamSpeeds.push(0.01 + Math.random() * 0.03);
+      streamYOff.push((Math.random() - 0.5) * 8);
     }
-    scene.add(cityGroup);
+    
+    dataStreamGeo.setAttribute('position', new THREE.BufferAttribute(dataStreamPositions, 3));
+    const dataStreamMat = new THREE.PointsMaterial({
+      color: 0x5eead4,
+      size: 0.15,
+      transparent: true,
+      opacity: 0.8,
+    });
+    const dataStreams = new THREE.Points(dataStreamGeo, dataStreamMat);
+    coreGroup.add(dataStreams);
 
-    // --- Floating Particles and Digital Network System ---
+    // 5. Service Node Anchors (These are invisible objects we track to position HTML overlay)
+    // Removed old building mechanics.
+
+    // --- Floating Particles (Global environment) ---
     const particleCount = 200;
     const particleGeo = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
@@ -269,54 +239,34 @@ export default function ThreeCanvas({ isDark }: ThreeCanvasProps) {
       mouseX += (targetMouseX - mouseX) * 0.05;
       mouseY += (targetMouseY - mouseY) * 0.05;
 
-      // Spin basic geometries
-      outerCube.rotation.x = elapsed * 0.12 + mouseX * 0.25;
-      outerCube.rotation.y = elapsed * 0.18 + mouseY * 0.25;
+      // Animate core pieces
+      innerCore.rotation.x = elapsed * 0.2 + mouseX * 0.3;
+      innerCore.rotation.y = elapsed * 0.25 + mouseY * 0.3;
+      
+      shellCore.rotation.x = -elapsed * 0.15 - mouseX * 0.2;
+      shellCore.rotation.y = -elapsed * 0.1 - mouseY * 0.2;
 
-      innerCube.rotation.x = -elapsed * 0.08 - mouseX * 0.15;
-      innerCube.rotation.y = -elapsed * 0.14 - mouseY * 0.15;
+      ring1.rotation.y = elapsed * 0.2 + mouseX * 0.1;
+      ring1.rotation.z = elapsed * 0.1 + mouseY * 0.1;
 
-      ring.rotation.x = elapsed * 0.05 + mouseY * 0.12;
-      ring.rotation.y = elapsed * 0.08 + mouseX * 0.12;
+      ring2.rotation.x = elapsed * 0.1 + mouseY * 0.1;
+      ring2.rotation.z = -elapsed * 0.15 - mouseX * 0.1;
 
-      // Rotate digital city group slowly and translate depth per scroll
-      cityGroup.rotation.y = elapsed * 0.015 + mouseX * 0.05;
-      cityGroup.position.z = scrollPercent * 12;
-      cityGroup.position.y = scrollPercent * 1.5;
+      // Rotate entire core group slowly and react to scroll
+      coreGroup.rotation.y = elapsed * 0.05 + mouseX * 0.1;
+      coreGroup.position.z = scrollPercent * 15;
+      coreGroup.position.y = scrollPercent * 5;
 
-      // Make individual digital buildings react dynamically to the cursor and timeline waves
-      buildings.forEach((b) => {
-        // Idle breathing breathing wave
-        const idleWave = Math.sin(elapsed * 0.6 + b.noiseOffset) * 0.15;
-
-        // Calculate building's spatial proximity to interactive cursor coordinates
-        // mouseX and mouseY are normalized between -1 and 1. We scale them up to match position coordinates.
-        const dx = b.initialX - (mouseX * 25);
-        const dz = b.initialZ - (mouseY * 20);
-        const dist = Math.sqrt(dx * dx + dz * dz);
-
-        // Within 18 units, buildings react and scale up
-        const proximityThreshold = 18;
-        const reactiveStrength = Math.max(0, 1 - dist / proximityThreshold);
-
-        // Scale building height
-        const targetScaleY = 1.0 + idleWave + (reactiveStrength * 0.45);
-        b.mesh.scale.y = THREE.MathUtils.lerp(b.mesh.scale.y, targetScaleY, 0.1);
-
-        // Reposition baseline so base of building remains aligned to the baseline coordinates (-8)
-        b.mesh.position.y = -8 + (b.baseHeight * b.mesh.scale.y) / 2;
-
-        // Subtle 3D physical sway tilt depending on the mouse pointer movement triggers
-        const targetRotX = Math.sin(elapsed + b.noiseOffset) * 0.025 + (mouseY * reactiveStrength * 0.15);
-        const targetRotZ = Math.cos(elapsed + b.noiseOffset) * 0.025 + (mouseX * reactiveStrength * 0.15);
-        b.mesh.rotation.x = THREE.MathUtils.lerp(b.mesh.rotation.x, targetRotX, 0.1);
-        b.mesh.rotation.z = THREE.MathUtils.lerp(b.mesh.rotation.z, targetRotZ, 0.1);
-
-        // Dynamically shift material emission glow intensity on client interaction or scroll
-        if (b.mesh.material instanceof THREE.MeshPhysicalMaterial) {
-          b.mesh.material.emissiveIntensity = 0.4 + (reactiveStrength * 2.0) + (scrollPercent * 1.5);
-        }
-      });
+      // Animate data streams (particles around the core)
+      const streamPositionsAttr = dataStreams.geometry.attributes.position as THREE.BufferAttribute;
+      const streamCoords = streamPositionsAttr.array as Float32Array;
+      for (let i = 0; i < dataStreamCount; i++) {
+        streamAngles[i] += streamSpeeds[i];
+        streamCoords[i * 3] = Math.cos(streamAngles[i]) * streamRadii[i];
+        streamCoords[i * 3 + 1] = streamYOff[i] + Math.sin(elapsed * 2 + i) * 0.5; // slight bobbing
+        streamCoords[i * 3 + 2] = Math.sin(streamAngles[i]) * streamRadii[i];
+      }
+      streamPositionsAttr.needsUpdate = true;
 
       // Shifting ambient & directional lighting intensities on scroll position to represent atmospheric change
       ambLight.intensity = (isDark ? 0.3 : 1.0) + (1.0 - scrollPercent) * 1.5;
@@ -325,11 +275,12 @@ export default function ThreeCanvas({ isDark }: ThreeCanvasProps) {
 
       // Adjust camera placement dynamically depending on the current scroll amount
       // This gives an amazing depth/parallax effect on scroll
-      camera.position.x = mouseX * 4;
-      camera.position.y = mouseY * 4;
+      camera.position.x = mouseX * 2;
+      camera.position.y = mouseY * 2;
       // Scroll moves camera closer and down slightly
-      camera.position.z = 25 - scrollPercent * 16;
-      camera.lookAt(0, -scrollPercent * 3, 0);
+      // Initially, we are at z=35, we zoom in slightly naturally, and scroll takes us in more
+      camera.position.z = Math.max(15, 35 - Math.min(elapsed * 2, 10) - scrollPercent * 25);
+      camera.lookAt(coreGroup.position.x * 0.5, -scrollPercent * 3, 0);
 
       // Move individual network stars particles
       const positionsAttr = particles.geometry.attributes.position as THREE.BufferAttribute;
@@ -412,12 +363,16 @@ export default function ThreeCanvas({ isDark }: ThreeCanvasProps) {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
       renderer.dispose();
-      outerGeo.dispose();
       innerGeo.dispose();
-      ringGeo.dispose();
-      outerMat.dispose();
+      shellGeo.dispose();
+      ringGeo1.dispose();
+      ringGeo2.dispose();
       innerMat.dispose();
-      ringMat.dispose();
+      shellMat.dispose();
+      ringMat1.dispose();
+      ringMat2.dispose();
+      dataStreamGeo.dispose();
+      dataStreamMat.dispose();
       particleGeo.dispose();
       particleMat.dispose();
       lineGeo.dispose();
@@ -425,7 +380,6 @@ export default function ThreeCanvas({ isDark }: ThreeCanvasProps) {
       ambLight.dispose();
       dirLight1.dispose();
       dirLight2.dispose();
-      buildingGeometries.forEach((g) => g.dispose());
     };
   }, [isDark]);
 

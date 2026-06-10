@@ -57,6 +57,7 @@ export default function CustomCursor() {
                             target.closest('textarea') || 
                             target.closest('[role="button"]') ||
                             target.closest('.cursor-pointer') ||
+                            target.closest('.service-node') ||
                             target.closest('[id*="tab"]') ||
                             target.closest('[id*="btn"]') ||
                             target.closest('[id*="bullet"]');

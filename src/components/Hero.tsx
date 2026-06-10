@@ -1,12 +1,90 @@
-import React, { useEffect, useRef } from 'react';
-import { motion } from 'motion/react';
-import { ArrowRight, Sparkles, ChevronDown } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { ArrowRight, Sparkles, ChevronDown, Code, Smartphone, Database, TerminalSquare, Cloud, BrainCircuit } from 'lucide-react';
 import gsap from 'gsap';
 import ThreeCanvas from './ThreeCanvas';
 
 interface HeroProps {
   isDark: boolean;
   onNavigate: (href: string) => void;
+}
+
+const SERVICES = [
+  { id: 1, title: 'Web Development', desc: 'Scalable React & Next.js architectures', icon: Code, angle: -15, radius: 140 },
+  { id: 2, title: 'Mobile Apps', desc: 'Cross-platform native iOS & Android', icon: Smartphone, angle: 45, radius: 180 },
+  { id: 3, title: 'ERP Systems', desc: 'Secure enterprise resource planning', icon: Database, angle: 105, radius: 150 },
+  { id: 4, title: 'POS Solutions', desc: 'Point-of-sale retail networks', icon: TerminalSquare, angle: 165, radius: 190 },
+  { id: 5, title: 'Cloud Services', desc: 'AWS & GCP scale-to-zero pipelines', icon: Cloud, angle: 225, radius: 160 },
+  { id: 6, title: 'AI Automation', desc: 'Intelligent digital agents & LLMs', icon: BrainCircuit, angle: 285, radius: 175 },
+];
+
+function ServiceNodes({ isDark }: { isDark: boolean }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    // Animate the nodes in a gentle floating motion
+    const nodes = containerRef.current.querySelectorAll('.service-node');
+    
+    nodes.forEach((node, idx) => {
+      gsap.to(node, {
+        y: `+=${10 + Math.random() * 15}`,
+        x: `+=${-5 + Math.random() * 10}`,
+        duration: 2 + Math.random() * 2,
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut',
+        delay: idx * 0.2
+      });
+      
+      // Node entry animation
+      gsap.fromTo(node, 
+        { opacity: 0, scale: 0, filter: 'blur(10px)' },
+        { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 1, delay: 3 + idx * 0.1, ease: 'back.out(1.5)' }
+      );
+    });
+  }, []);
+
+  return (
+    <div ref={containerRef} className="absolute inset-0 flex items-center justify-center pointer-events-none mt-16 sm:mt-0">
+      {SERVICES.map((service) => {
+        const xOffset = Math.cos(service.angle * (Math.PI / 180)) * service.radius;
+        const yOffset = Math.sin(service.angle * (Math.PI / 180)) * service.radius;
+        const Icon = service.icon;
+        
+        return (
+          <div
+            key={service.id}
+            className="service-node absolute pointer-events-auto"
+            style={{ 
+              transform: `translate(${xOffset}px, ${yOffset}px)`,
+            }}
+          >
+            <div className={`group relative flex items-center p-2 rounded-xl backdrop-blur-md border transition-all duration-300 hover:scale-110 cursor-none ${
+              isDark 
+                ? 'bg-black/40 border-teal-500/20 hover:border-teal-400 hover:bg-teal-950/60 shadow-[0_0_15px_rgba(20,184,166,0.1)] hover:shadow-[0_0_25px_rgba(20,184,166,0.4)]' 
+                : 'bg-white/60 border-teal-500/20 hover:border-teal-500'
+            }`}>
+              <div className="w-10 h-10 rounded-lg bg-teal-500/10 flex items-center justify-center text-teal-400">
+                <Icon size={20} />
+              </div>
+              
+              {/* Expandable content */}
+              <div className="w-0 overflow-hidden opacity-0 group-hover:w-36 group-hover:opacity-100 group-hover:ml-3 transition-all duration-300 whitespace-nowrap">
+                <h4 className={`text-xs font-bold font-display uppercase tracking-wider ${isDark ? 'text-teal-400' : 'text-teal-600'}`}>
+                  {service.title}
+                </h4>
+                <p className={`text-[9px] font-mono mt-0.5 truncate pr-2 ${isDark ? 'text-teal-100/60' : 'text-slate-500'}`}>
+                  {service.desc}
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 export default function Hero({ isDark, onNavigate }: HeroProps) {
@@ -60,80 +138,90 @@ export default function Hero({ isDark, onNavigate }: HeroProps) {
       {/* Three.js interactive immersive animation */}
       <ThreeCanvas isDark={isDark} />
 
-      {/* Layer Overlay to increase readability */}
+      {/* Layer Overlay to increase readability and add the right mood */}
       <div
         className={`absolute inset-0 z-5 transition-opacity duration-700 pointer-events-none ${
           isDark
-            ? 'bg-gradient-to-b from-[#000000]/70 via-transparent to-[#000000]/80'
+            ? 'bg-gradient-to-r from-black via-black/40 to-transparent'
             : 'bg-gradient-to-b from-white/70 via-transparent to-white/80'
         }`}
       />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center">
-        {/* Futuristic Badge */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.85 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full border border-teal-500/30 bg-teal-500/10 mb-8 sm:mb-10 backdrop-blur-md"
-        >
-          <Sparkles size={14} className="text-teal-400 animate-pulse" />
-          <span className="text-[10px] font-mono uppercase tracking-widest font-bold text-teal-400">
-            Awwwards-Level Digital Agency
-          </span>
-        </motion.div>
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[70vh]">
+          {/* Left Side: Content */}
+          <div className="text-left flex flex-col items-start justify-center pt-20">
+            {/* Futuristic Badge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6 }}
+              className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full border border-teal-500/30 bg-teal-500/10 mb-8 sm:mb-10 backdrop-blur-md"
+            >
+              <Sparkles size={14} className="text-teal-400 animate-pulse" />
+              <span className="text-[10px] font-mono uppercase tracking-widest font-bold text-teal-400">
+                Awwwards-Level Digital Agency
+              </span>
+            </motion.div>
 
-        {/* Dynamic Main Title */}
-        <h1
-          ref={headlineRef}
-          className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-extrabold tracking-tight max-w-5xl mx-auto leading-[1.1] mb-8 ${
-            isDark ? 'text-white' : 'text-slate-900'
-          }`}
-        >
-          Building Digital Solutions That Drive Innovation
-        </h1>
+            {/* Dynamic Main Title */}
+            <h1
+              ref={headlineRef}
+              className={`text-4xl sm:text-5xl md:text-6xl font-display font-extrabold tracking-tight leading-[1.15] mb-8 ${
+                isDark ? 'text-white' : 'text-slate-900'
+              }`}
+            >
+              Building The Future Through Intelligent Software
+            </h1>
 
-        {/* Subhead with typing feel */}
-        <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.0, duration: 0.8 }}
-          className={`text-base sm:text-lg md:text-xl max-w-3xl mx-auto font-light leading-relaxed mb-12 px-2 ${
-            isDark ? 'text-gray-300' : 'text-gray-700'
-          }`}
-        >
-          TSquare Innovations delivers modern web, mobile, cloud, and enterprise systems
-          that transform abstract visions into scalable digital assets.
-        </motion.p>
+            {/* Subhead with typing feel */}
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.0, duration: 0.8 }}
+              className={`text-base sm:text-lg md:text-xl max-w-xl font-light leading-relaxed mb-12 ${
+                isDark ? 'text-gray-300' : 'text-gray-700'
+              }`}
+            >
+              TSquare Innovations creates scalable web, mobile, cloud and enterprise solutions for modern businesses.
+            </motion.p>
 
-        {/* Glowing Action Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.2, duration: 0.8 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 px-4"
-        >
-          {/* Primary Submit Custom Booking CTA */}
-          <button
-            onClick={(e) => handleCtaClick(e, '#contact')}
-            className="group relative w-full sm:w-auto overflow-hidden px-8 py-4 bg-teal-500 hover:bg-teal-600 text-white dark:text-black font-semibold font-display text-sm uppercase tracking-wider rounded-lg transition-all duration-300 hover:scale-102 hover:shadow-[0_0_25px_rgba(20,184,166,0.6)] flex items-center justify-center space-x-2"
-          >
-            <span>Start a Project</span>
-            <ArrowRight size={16} className="group-hover:translate-x-1.5 transition-transform duration-300" />
-          </button>
+            {/* Glowing Action Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.2, duration: 0.8 }}
+              className="flex flex-col sm:flex-row items-center justify-start gap-4"
+            >
+              {/* Primary Submit Custom Booking CTA */}
+              <button
+                onClick={(e) => handleCtaClick(e, '#contact')}
+                className="group relative w-full sm:w-auto overflow-hidden px-8 py-4 bg-teal-500 hover:bg-teal-600 text-white dark:text-black font-semibold font-display text-sm uppercase tracking-wider rounded-lg transition-all duration-300 hover:scale-102 hover:shadow-[0_0_25px_rgba(20,184,166,0.6)] flex items-center justify-center space-x-2"
+              >
+                <span>Start Your Project</span>
+                <ArrowRight size={16} className="group-hover:translate-x-1.5 transition-transform duration-300" />
+              </button>
 
-          {/* Secondary Portfolio CTA */}
-          <button
-            onClick={(e) => handleCtaClick(e, '#portfolio')}
-            className={`w-full sm:w-auto px-8 py-4 border font-semibold font-display text-sm uppercase tracking-wider rounded-lg transition-all duration-300 ${
-              isDark
-                ? 'border-white/10 hover:border-teal-500 hover:bg-white/5 text-white'
-                : 'border-slate-300 hover:border-teal-500 hover:bg-slate-50 text-slate-900'
-            }`}
-          >
-            View Portfolio
-          </button>
-        </motion.div>
+              {/* Secondary Portfolio CTA */}
+              <button
+                onClick={(e) => handleCtaClick(e, '#portfolio')}
+                className={`w-full sm:w-auto px-8 py-4 border font-semibold font-display text-sm uppercase tracking-wider rounded-lg transition-all duration-300 ${
+                  isDark
+                    ? 'border-white/10 hover:border-teal-500 hover:bg-white/5 text-white'
+                    : 'border-slate-300 hover:border-teal-500 hover:bg-slate-50 text-slate-900'
+                }`}
+              >
+                View Our Work
+              </button>
+            </motion.div>
+          </div>
+
+          {/* Right Side: Interactive Nodes Overlay */}
+          <div className="hidden lg:flex relative h-full items-center justify-center pointer-events-none">
+             {/* We will map over service nodes here to place them around the core */}
+             <ServiceNodes isDark={isDark} />
+          </div>
+        </div>
       </div>
 
       {/* Downward Scroll Indicator */}
@@ -144,7 +232,7 @@ export default function Hero({ isDark, onNavigate }: HeroProps) {
         <div
           ref={scrollIndicatorRef}
           onClick={() => onNavigate('#about')}
-          className={`cursor-pointer w-6 h-10 border-2 rounded-full flex items-start justify-center p-1 transition-colors ${
+          className={`cursor-pointer w-6 h-10 border-2 rounded-full flex items-start justify-center p-1 transition-colors pointer-events-auto ${
             isDark ? 'border-gray-500 hover:border-teal-500' : 'border-gray-400 hover:border-teal-500'
           }`}
         >
