@@ -10,6 +10,9 @@ import Testimonials from './components/Testimonials';
 import Process from './components/Process';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
+import CustomCursor from './components/CustomCursor';
+import AIAssistant from './components/AIAssistant';
+import ScrollWeightEffect from './components/ScrollWeightEffect';
 
 export default function App() {
   const [isDark, setIsDark] = useState<boolean>(true);
@@ -89,6 +92,15 @@ export default function App() {
         isDark ? 'bg-black text-white' : 'bg-white text-slate-900'
       }`}
     >
+      {/* Animated Custom Cursor Effect */}
+      <CustomCursor />
+
+      {/* Scroll weight physics tilt & scale effect */}
+      <ScrollWeightEffect />
+
+      {/* Concierge AI Assistant */}
+      <AIAssistant isDark={isDark} />
+
       {/* Sticky top navigation rail */}
       <Navbar
         isDark={isDark}

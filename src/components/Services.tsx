@@ -80,7 +80,7 @@ export default function Services({ isDark }: ServicesProps) {
               viewport={{ once: true, margin: '-60px' }}
               transition={{ delay: (index % 4) * 0.1, duration: 0.5 }}
               whileHover={{ y: -6, scale: 1.01 }}
-              className={`p-6 sm:p-8 rounded-2xl border transition-all duration-300 relative group overflow-hidden ${
+              className={`scroll-weight-card p-6 sm:p-8 rounded-2xl border transition-all duration-300 relative group overflow-hidden ${
                 isDark
                   ? 'glass-panel-dark border-white/5 hover:border-teal-500/30'
                   : 'glass-panel-light border-teal-500/10 hover:border-teal-500/40 hover:bg-white'

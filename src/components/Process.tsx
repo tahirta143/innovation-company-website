@@ -51,7 +51,7 @@ export default function Process({ isDark }: ProcessProps) {
                 viewport={{ once: true, margin: '-60px' }}
                 transition={{ delay: index * 0.15, duration: 0.5 }}
                 whileHover={{ y: -6 }}
-                className={`p-6 sm:p-8 rounded-2xl border relative z-10 overflow-hidden group transition-all duration-300 ${
+                className={`scroll-weight-card p-6 sm:p-8 rounded-2xl border relative z-10 overflow-hidden group transition-all duration-300 ${
                   isDark
                     ? 'glass-panel-dark border-white/5 hover:border-teal-500/30'
                     : 'glass-panel-light border-teal-500/10 hover:border-teal-500/30 shadow-sm'

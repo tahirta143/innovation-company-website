@@ -58,7 +58,7 @@ function StatCounter({ target, suffix, label, icon, isDark }: StatItemProps) {
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
       whileHover={{ y: -4 }}
-      className={`p-6 sm:p-8 rounded-2xl border transition-all duration-300 relative overflow-hidden text-center flex flex-col items-center ${
+      className={`scroll-weight-card p-6 sm:p-8 rounded-2xl border transition-all duration-300 relative overflow-hidden text-center flex flex-col items-center ${
         isDark
           ? 'glass-panel-dark border-white/5 hover:border-teal-500/35'
           : 'glass-panel-light border-teal-500/10 hover:border-teal-500/35'

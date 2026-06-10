@@ -76,6 +76,80 @@ export default function ThreeCanvas({ isDark }: ThreeCanvasProps) {
     ring.rotation.x = Math.PI / 3;
     scene.add(ring);
 
+    // --- Immersive Digital City / Tech Grid Matrix ---
+    const cityGroup = new THREE.Group();
+    const cityCount = 20;
+    const buildingGeometries: THREE.BoxGeometry[] = [];
+    const buildingMaterials: THREE.MeshPhysicalMaterial[] = [];
+    const buildings: {
+      mesh: THREE.Mesh;
+      baseHeight: number;
+      initialX: number;
+      initialZ: number;
+      noiseOffset: number;
+    }[] = [];
+
+    // Glowing horizontal coordinates scale grid on the floor under the city
+    const gridHelper = new THREE.GridHelper(60, 30, 0x14b8a6, isDark ? 0x0d9488 : 0x2dd4bf);
+    gridHelper.position.y = -8.1; // place slightly below scale ground
+    if (Array.isArray(gridHelper.material)) {
+      gridHelper.material.forEach((m) => {
+        m.transparent = true;
+        m.opacity = isDark ? 0.35 : 0.25;
+      });
+    } else {
+      gridHelper.material.transparent = true;
+      gridHelper.material.opacity = isDark ? 0.35 : 0.25;
+    }
+    cityGroup.add(gridHelper);
+
+    for (let i = 0; i < cityCount; i++) {
+      const w = 1.2 + Math.random() * 2;
+      const h = 5 + Math.random() * 10;
+      const d = 1.2 + Math.random() * 2;
+      
+      const bGeo = new THREE.BoxGeometry(w, h, d);
+      buildingGeometries.push(bGeo);
+
+      // Solid translucent body with neon physical properties
+      const bMat = new THREE.MeshPhysicalMaterial({
+        color: isDark ? 0x0f766e : 0x0d9488,
+        emissive: isDark ? 0x042f2e : 0x115e59,
+        roughness: 0.2,
+        metalness: 0.9,
+        transmission: 0.7,
+        transparent: true,
+        opacity: 0.35,
+      });
+      buildingMaterials.push(bMat);
+      const mesh = new THREE.Mesh(bGeo, bMat);
+
+      // Edge glow wireframe outline lines
+      const edges = new THREE.EdgesGeometry(bGeo);
+      const edgeMat = new THREE.LineBasicMaterial({
+        color: isDark ? 0x2dd4bf : 0x0d9488,
+        transparent: true,
+        opacity: 0.65,
+      });
+      const line = new THREE.LineSegments(edges, edgeMat);
+      mesh.add(line);
+
+      // Position buildings on a grid at the baseline base
+      mesh.position.x = (Math.random() - 0.5) * 45;
+      mesh.position.y = -8 + h / 2; // baseline ground offsets
+      mesh.position.z = (Math.random() - 0.5) * 35;
+      
+      cityGroup.add(mesh);
+      buildings.push({
+        mesh,
+        baseHeight: h,
+        initialX: mesh.position.x,
+        initialZ: mesh.position.z,
+        noiseOffset: Math.random() * 100
+      });
+    }
+    scene.add(cityGroup);
+
     // --- Floating Particles and Digital Network System ---
     const particleCount = 200;
     const particleGeo = new THREE.BufferGeometry();
@@ -205,6 +279,50 @@ export default function ThreeCanvas({ isDark }: ThreeCanvasProps) {
       ring.rotation.x = elapsed * 0.05 + mouseY * 0.12;
       ring.rotation.y = elapsed * 0.08 + mouseX * 0.12;
 
+      // Rotate digital city group slowly and translate depth per scroll
+      cityGroup.rotation.y = elapsed * 0.015 + mouseX * 0.05;
+      cityGroup.position.z = scrollPercent * 12;
+      cityGroup.position.y = scrollPercent * 1.5;
+
+      // Make individual digital buildings react dynamically to the cursor and timeline waves
+      buildings.forEach((b) => {
+        // Idle breathing breathing wave
+        const idleWave = Math.sin(elapsed * 0.6 + b.noiseOffset) * 0.15;
+
+        // Calculate building's spatial proximity to interactive cursor coordinates
+        // mouseX and mouseY are normalized between -1 and 1. We scale them up to match position coordinates.
+        const dx = b.initialX - (mouseX * 25);
+        const dz = b.initialZ - (mouseY * 20);
+        const dist = Math.sqrt(dx * dx + dz * dz);
+
+        // Within 18 units, buildings react and scale up
+        const proximityThreshold = 18;
+        const reactiveStrength = Math.max(0, 1 - dist / proximityThreshold);
+
+        // Scale building height
+        const targetScaleY = 1.0 + idleWave + (reactiveStrength * 0.45);
+        b.mesh.scale.y = THREE.MathUtils.lerp(b.mesh.scale.y, targetScaleY, 0.1);
+
+        // Reposition baseline so base of building remains aligned to the baseline coordinates (-8)
+        b.mesh.position.y = -8 + (b.baseHeight * b.mesh.scale.y) / 2;
+
+        // Subtle 3D physical sway tilt depending on the mouse pointer movement triggers
+        const targetRotX = Math.sin(elapsed + b.noiseOffset) * 0.025 + (mouseY * reactiveStrength * 0.15);
+        const targetRotZ = Math.cos(elapsed + b.noiseOffset) * 0.025 + (mouseX * reactiveStrength * 0.15);
+        b.mesh.rotation.x = THREE.MathUtils.lerp(b.mesh.rotation.x, targetRotX, 0.1);
+        b.mesh.rotation.z = THREE.MathUtils.lerp(b.mesh.rotation.z, targetRotZ, 0.1);
+
+        // Dynamically shift material emission glow intensity on client interaction or scroll
+        if (b.mesh.material instanceof THREE.MeshPhysicalMaterial) {
+          b.mesh.material.emissiveIntensity = 0.4 + (reactiveStrength * 2.0) + (scrollPercent * 1.5);
+        }
+      });
+
+      // Shifting ambient & directional lighting intensities on scroll position to represent atmospheric change
+      ambLight.intensity = (isDark ? 0.3 : 1.0) + (1.0 - scrollPercent) * 1.5;
+      dirLight1.intensity = 2.0 + Math.sin(elapsed * 1.5) * 0.5 + scrollPercent * 4.0;
+      dirLight2.intensity = 1.0 + (1.0 - scrollPercent) * 2.5;
+
       // Adjust camera placement dynamically depending on the current scroll amount
       // This gives an amazing depth/parallax effect on scroll
       camera.position.x = mouseX * 4;
@@ -307,6 +425,7 @@ export default function ThreeCanvas({ isDark }: ThreeCanvasProps) {
       ambLight.dispose();
       dirLight1.dispose();
       dirLight2.dispose();
+      buildingGeometries.forEach((g) => g.dispose());
     };
   }, [isDark]);
 

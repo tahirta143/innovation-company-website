@@ -59,7 +59,7 @@ export default function Testimonials({ isDark }: TestimonialsProps) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -15 }}
               transition={{ duration: 0.4 }}
-              className={`p-8 sm:p-12 rounded-3xl border relative ${
+              className={`scroll-weight-card p-8 sm:p-12 rounded-3xl border relative ${
                 isDark ? 'glass-panel-dark' : 'glass-panel-light bg-white/80'
               }`}
             >

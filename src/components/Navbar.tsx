@@ -51,15 +51,19 @@ export default function Navbar({ isDark, toggleTheme, activeSection }: NavbarPro
     <>
       <nav
         id="main-navbar"
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+        className={`fixed z-50 transition-all duration-500 ease-in-out ${
           isScrolled
-            ? isDark
-              ? 'bg-[#000000]/80 border-b border-white/10 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.8)]'
-              : 'bg-white/85 border-b border-teal-500/10 backdrop-blur-md shadow-[0_4px_30px_rgba(20,184,166,0.06)]'
-            : 'bg-transparent border-b border-transparent'
+            ? `top-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-5xl rounded-full border shadow-[0_15px_45px_rgba(0,0,0,0.3)] backdrop-blur-md px-2 ${
+                isDark
+                  ? 'bg-black/80 border-white/15'
+                  : 'bg-white/80 border-teal-500/15'
+              }`
+            : `top-0 left-0 w-full border-b border-transparent bg-transparent`
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between transition-all duration-500 ${
+          isScrolled ? 'h-15' : 'h-20'
+        }`}>
           {/* Logo with interactive glowing square */}
           <a
             id="navbar-logo"
