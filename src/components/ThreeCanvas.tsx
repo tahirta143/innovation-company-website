@@ -17,8 +17,8 @@ export default function ThreeCanvas({ isDark }: ThreeCanvasProps) {
 
     // --- Scene Setup ---
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(isDark ? 0x000000 : 0x0f172a, 0.015);
-    scene.background = new THREE.Color(isDark ? 0x000000 : 0x0f172a);
+    scene.fog = new THREE.FogExp2(isDark ? 0x000000 : 0xffffff, 0.015);
+    scene.background = new THREE.Color(isDark ? 0x000000 : 0xffffff);
 
     // --- Camera Setup ---
     const camera = new THREE.PerspectiveCamera(
@@ -47,14 +47,14 @@ export default function ThreeCanvas({ isDark }: ThreeCanvasProps) {
     // 1. Inner glowing solid core (Icosahedron)
     const innerGeo = new THREE.IcosahedronGeometry(2.5, 0);
     const innerMat = new THREE.MeshPhysicalMaterial({
-      color: 0x0d9488,
-      emissive: 0x0f766e,
+      color: isDark ? 0x0d9488 : 0x14b8a6,
+      emissive: isDark ? 0x0f766e : 0x0f766e,
       roughness: 0.1,
       metalness: 0.8,
       transmission: 0.8,
       thickness: 1.5,
       transparent: true,
-      opacity: 0.85,
+      opacity: isDark ? 0.85 : 0.65,
     });
     const innerCore = new THREE.Mesh(innerGeo, innerMat);
     coreGroup.add(innerCore);
@@ -175,14 +175,14 @@ export default function ThreeCanvas({ isDark }: ThreeCanvasProps) {
     scene.add(networkLines);
 
     // --- Ambient and Digital Lights ---
-    const ambLight = new THREE.AmbientLight(isDark ? 0x022c22 : 0xccfbf1, 2.0);
+    const ambLight = new THREE.AmbientLight(isDark ? 0x022c22 : 0xffffff, isDark ? 2.0 : 1.5);
     scene.add(ambLight);
 
-    const dirLight1 = new THREE.DirectionalLight(0x14b8a6, 4);
+    const dirLight1 = new THREE.DirectionalLight(0x14b8a6, isDark ? 4 : 2.5);
     dirLight1.position.set(10, 20, 15);
     scene.add(dirLight1);
 
-    const dirLight2 = new THREE.DirectionalLight(0xffffff, 1.5);
+    const dirLight2 = new THREE.DirectionalLight(isDark ? 0xffffff : 0x0f766e, 1.5);
     dirLight2.position.set(-15, -10, -10);
     scene.add(dirLight2);
 

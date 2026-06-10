@@ -64,7 +64,7 @@ function ServiceNodes({ isDark }: { isDark: boolean }) {
             <div className={`group relative flex items-center p-2 rounded-xl backdrop-blur-md border transition-all duration-300 hover:scale-110 cursor-none ${
               isDark 
                 ? 'bg-black/40 border-teal-500/20 hover:border-teal-400 hover:bg-teal-950/60 shadow-[0_0_15px_rgba(20,184,166,0.1)] hover:shadow-[0_0_25px_rgba(20,184,166,0.4)]' 
-                : 'bg-white/60 border-teal-500/20 hover:border-teal-500'
+                : 'bg-white/80 border-teal-500/20 hover:border-teal-500 shadow-sm hover:shadow-md'
             }`}>
               <div className="w-10 h-10 rounded-lg bg-teal-500/10 flex items-center justify-center text-teal-400">
                 <Icon size={20} />
@@ -143,7 +143,7 @@ export default function Hero({ isDark, onNavigate }: HeroProps) {
         className={`absolute inset-0 z-5 transition-opacity duration-700 pointer-events-none ${
           isDark
             ? 'bg-gradient-to-r from-black via-black/40 to-transparent'
-            : 'bg-gradient-to-b from-white/70 via-transparent to-white/80'
+            : 'bg-gradient-to-r from-white via-white/70 to-transparent'
         }`}
       />
 
