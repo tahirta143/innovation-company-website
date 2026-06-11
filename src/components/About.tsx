@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
-import { Target, Eye, Sparkles, CheckCircle2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Target, Eye, Sparkles, CheckCircle2, ChevronDown } from 'lucide-react';
 import { TIMELINE } from '../data';
 
 interface AboutProps {
@@ -9,11 +9,35 @@ interface AboutProps {
 
 export default function About({ isDark }: AboutProps) {
   const [selectedMile, setSelectedMile] = useState<number>(TIMELINE.length - 1);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const stats = [
     { value: '5+', label: 'Years in Business' },
     { value: '50+', label: 'Successful Launches' },
     { value: '100%', label: 'Commitment Level' }
+  ];
+
+  const faqs = [
+    {
+      question: "What is TSquare Innovations' core development stack?",
+      answer: "We specialize in custom high-availability architectures focusing on React, Next.js, TypeScript, Node.js, and native mobile technologies. Our backend designs rely on scale-to-zero serverless pipelines and high-performance databases tailored to your strict performance standards."
+    },
+    {
+      question: "Do you build custom ERP and POS systems from scratch?",
+      answer: "Yes, we specialize in high-integrity, completely customized enterprise systems. We design robust multi-tenant corporate databases, inventory tracking matrix, and point-of-sale networks customized specifically to automate your business with zero template restriction."
+    },
+    {
+      question: "How do you ensure data security and compliance?",
+      answer: "Security is non-negotiable. We integrate secure OAuth systems, end-to-end data encryption, and robust firewalls. We construct all platforms to comply with industry regulatory standards, supplying complete audit trails and data integrity diagnostics."
+    },
+    {
+      question: "What is your approach to post-launch maintenance?",
+      answer: "We offer dedicated long-term partnership agreements featuring 24/7 active cloud monitoring, prompt library security patches, automated rollbacks, and scalable data back-up systems to guarantee 99.99% operational uptime."
+    },
+    {
+      question: "How do we get started with our custom project?",
+      answer: "Simply submit your primary targets via our contact desk. Our engineering consultants will schedule a blueprint session within 24 hours to translate your objectives into structured specifications and transparent phase quotes."
+    }
   ];
 
   return (
@@ -198,6 +222,85 @@ export default function About({ isDark }: AboutProps) {
           </div>
 
         </div>
+
+        {/* FAQ Accordion Section */}
+        <div className="mt-28 md:mt-36 pt-20 border-t border-teal-500/10">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-16">
+              <span className={`text-xs font-mono font-bold tracking-widest uppercase ${isDark ? 'text-teal-400' : 'text-teal-600'}`}>
+                Clear Answers
+              </span>
+              <h3 className={`text-2xl sm:text-3xl font-display font-bold mt-2 tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                Frequently Asked Questions
+              </h3>
+              <p className={`text-sm font-light mt-4 max-w-xl mx-auto leading-relaxed ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                Discover how we engineer, deploy, and guarantee high-availability custom software platforms for scalable business management.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {faqs.map((faq, index) => {
+                const isOpen = openFaq === index;
+                return (
+                  <div
+                    key={index}
+                    id={`faq-item-${index}`}
+                    className={`scroll-weight-card rounded-xl border transition-all duration-300 overflow-hidden ${
+                      isOpen
+                        ? isDark
+                          ? 'bg-gradient-to-r from-teal-950/20 via-black to-black border-teal-500 shadow-[0_0_15px_rgba(20,184,166,0.15)]'
+                          : 'bg-gradient-to-r from-teal-50/50 via-white to-white border-teal-500 shadow-[0_2px_12px_rgba(20,184,166,0.1)]'
+                        : isDark
+                        ? 'bg-zinc-950/20 border-white/5 hover:border-teal-500/30'
+                        : 'bg-slate-50/50 border-teal-500/10 hover:border-teal-500/30'
+                    }`}
+                  >
+                    <button
+                      id={`faq-btn-${index}`}
+                      onClick={() => setOpenFaq(isOpen ? null : index)}
+                      className="w-full py-5 px-6 sm:px-8 flex items-center justify-between text-left focus:outline-none transition-colors cursor-pointer"
+                      aria-expanded={isOpen}
+                    >
+                      <span className={`text-sm sm:text-base font-display font-bold pr-4 transition-colors ${
+                        isOpen 
+                          ? 'text-teal-400' 
+                          : isDark ? 'text-white hover:text-teal-400' : 'text-slate-900'
+                      }`}>
+                        {faq.question}
+                      </span>
+                      <div className={`p-1.5 rounded-lg flex items-center justify-center transition-all duration-300 ${
+                        isOpen 
+                          ? 'bg-teal-500/10 text-teal-400 rotate-180' 
+                          : isDark ? 'bg-white/5 text-gray-400' : 'bg-teal-500/5 text-teal-600'
+                      }`}>
+                        <ChevronDown size={18} />
+                      </div>
+                    </button>
+
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          id={`faq-content-${index}`}
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.35, ease: 'easeInOut' }}
+                        >
+                          <div className={`px-6 sm:px-8 pb-6 text-xs sm:text-sm font-light leading-relaxed border-t ${
+                            isDark ? 'border-white/5 text-gray-300' : 'border-teal-500/5 text-gray-600'
+                          }`}>
+                            {faq.answer}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
   );
