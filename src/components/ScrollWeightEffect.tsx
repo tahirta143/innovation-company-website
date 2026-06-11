@@ -6,7 +6,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function ScrollWeightEffect() {
   useEffect(() => {
-    // Delay slightly to allow the DOM to fully stabilize and render high-fidelity containers
+    // Highly responsive offset delay to let React fully paint the layout of the cards
     const delayTimer = setTimeout(() => {
       const cards = document.querySelectorAll('.scroll-weight-card');
       if (cards.length === 0) return;
@@ -19,7 +19,7 @@ export default function ScrollWeightEffect() {
           const parent = element.parentElement;
           if (parent) {
             gsap.set(parent, { 
-              perspective: 1200,
+              perspective: 1250,
               transformStyle: 'preserve-3d'
             });
           }
@@ -29,53 +29,60 @@ export default function ScrollWeightEffect() {
             transformOrigin: 'center center',
             transformStyle: 'preserve-3d',
             backfaceVisibility: 'hidden',
-            z: -40,
-            rotationX: 15,
-            scale: 0.94,
-            opacity: 0.15,
-            y: 35
           });
 
-          // 1. Entry ScrollTrigger: Animates card from tilted bottom entry stance to fully flat, focused state
-          gsap.to(element, {
-            z: 0,
-            rotationX: 0,
-            scale: 1,
-            opacity: 1,
-            y: 0,
-            ease: 'power1.out',
+          // Consolidate both Entry and Exit stages into a SINGLE GSAP Timeline.
+          // This eliminates tween property conflicts and ensures high-performance calculation.
+          const tl = gsap.timeline({
             scrollTrigger: {
               trigger: element,
-              start: 'top bottom-=60', // Start animation when card top creeps into bottom of screen
-              end: 'top center+=140',   // Resolve fully flat as card settles into upper viewport
-              scrub: 1.2,                // Smooth weighted latency to represent solid material inertia
-              toggleActions: 'play none none reverse'
+              start: 'top bottom', // Begins when the top of card reaches the bottom of viewport
+              end: 'bottom top',   // Ends when the bottom of card exits the top of viewport
+              scrub: 0.3,          // Ultra-responsive scrub for immediate, elegant feedback
             }
           });
 
-          // 2. Exit ScrollTrigger: Smoothly tilts and folds back the card as it scrolls out of the top
-          gsap.to(element, {
-            z: -40,
-            rotationX: -15,
-            scale: 0.94,
-            opacity: 0.15,
-            y: -35,
-            ease: 'power1.in',
-            scrollTrigger: {
-              trigger: element,
-              start: 'bottom center-=140', // Start fading/tilting as it reaches top section of view
-              end: 'bottom top+=60',       // Fully minimized at the exit threshold
-              scrub: 1.2,
-              toggleActions: 'play none none reverse'
+          tl.fromTo(element,
+            {
+              z: -35,
+              rotationX: 12,
+              scale: 0.95,
+              opacity: 0,
+              y: 40
+            },
+            {
+              z: 0,
+              rotationX: 0,
+              scale: 1,
+              opacity: 1,
+              y: 0,
+              duration: 1, // Represents 1 part of the timeline
+              ease: 'power2.out'
             }
+          )
+          .to(element, {
+            // Plateau: remain perfectly flat and interactive in the active view
+            duration: 1.5,
+          })
+          .to(element, {
+            z: -35,
+            rotationX: -12,
+            scale: 0.95,
+            opacity: 0,
+            y: -40,
+            duration: 1,
+            ease: 'power2.in'
           });
         });
       });
 
+      // Refresh measurements once to align coordinates perfectly
+      ScrollTrigger.refresh();
+
       return () => {
         ctx.revert();
       };
-    }, 150);
+    }, 50);
 
     return () => clearTimeout(delayTimer);
   }, []);
